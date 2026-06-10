@@ -24,6 +24,10 @@ body {
   color: var(--color-text-pri);
   font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
   overscroll-behavior: none;
+  /* Safe area per iPhone con notch/Dynamic Island */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 @keyframes shimmer {
