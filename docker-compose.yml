@@ -1,0 +1,22 @@
+services:
+  server:
+    build: ./server
+    restart: unless-stopped
+    env_file: ./server/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    expose:
+      - "3001"
+
+  client:
+    build:
+      context: ./client
+      args:
+        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+        - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server

@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg:         #0A0A0A;
+  --color-surface:    #141414;
+  --color-surface-2:  #1C1C1E;
+  --color-accent:     #1DB954;
+  --color-accent-alt: #FF2D55;
+  --color-text-pri:   #FFFFFF;
+  --color-text-sec:   #A0A0A0;
+  --color-text-ter:   #4A4A4A;
+  --color-border:     rgba(255,255,255,0.07);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text-pri);
+  font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
+  overscroll-behavior: none;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #1C1C1E 25%, #242426 50%, #1C1C1E 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+.animate-spin-slow.paused {
+  animation-play-state: paused;
+}
+
+/* Custom seek bar */
+.seek-bar {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: transparent;
+}
+.seek-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease, width 0.15s ease, height 0.15s ease;
+}
+.seek-bar:active::-webkit-slider-thumb {
+  transform: scale(1.4);
+}
+.seek-bar::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+/* Scrollbar hidden */
+::-webkit-scrollbar { display: none; }
+scrollbar-width: none;
