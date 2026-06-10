@@ -88,7 +88,7 @@ router.get('/latest', requireAuth, async (req, res) => {
   const cached = latestCache.get(key);
   if (cached && cached.exp > Date.now()) return res.json(cached.data);
   try {
-    const results = await searchYouTube(`${artist} official`, 10);
+    const results = await searchYouTube(`${artist} official`);
     const filtered = results.filter((r) => r.duration > 60 && r.duration < 600);
     latestCache.set(key, { data: filtered, exp: Date.now() + 3600_000 });
     res.json(filtered);
