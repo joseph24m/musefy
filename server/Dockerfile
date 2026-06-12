@@ -7,11 +7,14 @@ RUN apk add --no-cache python3 py3-pip ffmpeg && \
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copy source and build
 COPY . .
-RUN npm install --include=dev && npm run build
+RUN npm run build
+
+# Remove dev dependencies after build
+RUN npm prune --omit=dev
 
 EXPOSE 3001
 
