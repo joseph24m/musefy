@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import searchRouter from './routes/search';
 import streamRouter from './routes/stream';
 import suggestionsRouter from './routes/suggestions';
@@ -21,12 +22,20 @@ import moodRouter from './routes/mood';
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust Cloudflare proxy so rate-limit uses real client IP from X-Forwarded-For
+app.set('trust proxy', 1);
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:5173', 'http://localhost:4173'];
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
+
+// Rate limiting — max 200 req/min per IP reale (Cloudflare fornisce X-Forwarded-For)
+app.use(rateLimit({ windowMs: 60_000, max: 200, standardHeaders: true, legacyHeaders: false }));
+// Limite più stretto su stream (evita abusi yt-dlp)
+app.use('/api/stream', rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false }));
 
 // Existing routes
 app.use('/api/search', searchRouter);
