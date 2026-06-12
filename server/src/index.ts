@@ -1,7 +1,6 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import rateLimit from 'express-rate-limit';
 import searchRouter from './routes/search';
 import streamRouter from './routes/stream';
 import suggestionsRouter from './routes/suggestions';
@@ -25,6 +24,26 @@ const PORT = process.env.PORT || 3001;
 // Trust Cloudflare proxy so rate-limit uses real client IP from X-Forwarded-For
 app.set('trust proxy', 1);
 
+// Simple in-memory rate limiter (no external deps)
+function makeRateLimiter(maxReq: number, windowMs: number) {
+  const counts = new Map<string, { n: number; reset: number }>();
+  return (req: Request, res: Response, next: NextFunction) => {
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0].trim() || req.ip || 'unknown';
+    const now = Date.now();
+    const entry = counts.get(ip);
+    if (!entry || now > entry.reset) {
+      counts.set(ip, { n: 1, reset: now + windowMs });
+      return next();
+    }
+    entry.n++;
+    if (entry.n > maxReq) {
+      res.status(429).json({ error: 'Too many requests' });
+      return;
+    }
+    next();
+  };
+}
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : ['http://localhost:5173', 'http://localhost:4173'];
@@ -32,10 +51,9 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 
-// Rate limiting — max 200 req/min per IP reale (Cloudflare fornisce X-Forwarded-For)
-app.use(rateLimit({ windowMs: 60_000, max: 200, standardHeaders: true, legacyHeaders: false }));
-// Limite più stretto su stream (evita abusi yt-dlp)
-app.use('/api/stream', rateLimit({ windowMs: 60_000, max: 30, standardHeaders: true, legacyHeaders: false }));
+// Rate limiting — 200 req/min globale, 30/min su stream
+app.use(makeRateLimiter(200, 60_000));
+app.use('/api/stream', makeRateLimiter(30, 60_000));
 
 // Existing routes
 app.use('/api/search', searchRouter);
